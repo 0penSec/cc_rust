@@ -184,7 +184,17 @@ mod tests {
     #[tokio::test]
     #[cfg(windows)]
     async fn test_bash_echo_windows() {
-        // On Windows, bash may not be available, so we test with cmd
+        // On Windows, bash may not be available (e.g., in GitHub Actions)
+        // Check if bash exists first
+        if std::process::Command::new("bash")
+            .arg("--version")
+            .output()
+            .is_err()
+        {
+            eprintln!("Skipping test: bash not available on Windows");
+            return;
+        }
+
         let tool = BashTool::new();
         let ctx = ToolContext {
             session_id: Default::default(),
@@ -196,13 +206,23 @@ mod tests {
         }));
 
         let result = tool.execute(input, &ctx).await.unwrap();
-        // Just check it runs without error, content may vary
         assert!(!result.is_error);
     }
 
     #[tokio::test]
     #[cfg(windows)]
     async fn test_bash_error_windows() {
+        // On Windows, bash may not be available (e.g., in GitHub Actions)
+        // Check if bash exists first
+        if std::process::Command::new("bash")
+            .arg("--version")
+            .output()
+            .is_err()
+        {
+            eprintln!("Skipping test: bash not available on Windows");
+            return;
+        }
+
         let tool = BashTool::new();
         let ctx = ToolContext {
             session_id: Default::default(),
@@ -210,7 +230,7 @@ mod tests {
             env_vars: std::collections::HashMap::new(),
         };
         let input = ToolInput::new(json!({
-            "command": "exit /b 1"
+            "command": "exit 1"
         }));
 
         let result = tool.execute(input, &ctx).await.unwrap();
