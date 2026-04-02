@@ -130,14 +130,14 @@ assert_cmd = "2.0"
 predicates = "3.1"
 
 # Internal workspace dependencies
-claude-core = { path = "crates/core" }
-claude-engine = { path = "crates/engine" }
-claude-tools = { path = "crates/tools" }
-claude-commands = { path = "crates/commands" }
-claude-tui = { path = "crates/tui" }
-claude-services = { path = "crates/services" }
-claude-bridge = { path = "crates/bridge" }
-claude-coordinator = { path = "crates/coordinator" }
+claude-core = { path = "crates/core", version = "0.1.0" }
+claude-engine = { path = "crates/engine", version = "0.1.0" }
+claude-tools = { path = "crates/tools", version = "0.1.0" }
+claude-commands = { path = "crates/commands", version = "0.1.0" }
+claude-tui = { path = "crates/tui", version = "0.1.0" }
+claude-services = { path = "crates/services", version = "0.1.0" }
+claude-bridge = { path = "crates/bridge", version = "0.1.0" }
+claude-coordinator = { path = "crates/coordinator", version = "0.1.0" }
 
 [profile.release]
 opt-level = 3
