@@ -71,16 +71,14 @@ struct ToolUseBuilder {
 
 impl EventStream {
     /// Create a new event stream from a request
-    pub async fn new(
-        client: &AnthropicClient,
-        request: MessagesRequest,
-    ) -> ClaudeResult<Self> {
+    pub async fn new(client: &AnthropicClient, request: MessagesRequest) -> ClaudeResult<Self> {
         let url = format!("{}/v1/messages", client.config().api_base);
 
         debug!("Starting SSE stream to {}", url);
 
         // Create request builder with proper headers
-        let request_builder = client.http()
+        let request_builder = client
+            .http()
             .post(&url)
             .header("x-api-key", client.config().api_key.clone())
             .header("anthropic-version", client.config().version.clone())
@@ -89,7 +87,7 @@ impl EventStream {
         // Create EventSource from request builder
         let body = serde_json::to_string(&request)
             .map_err(|e| claude_core::ClaudeError::Serialization(e.to_string()))?;
-            
+
         let es = EventSource::new(request_builder.body(body))
             .map_err(|e| claude_core::ClaudeError::Network(e.to_string()))?;
 
@@ -120,16 +118,8 @@ impl EventStream {
                 let block_type = event.data.get("type")?.as_str()?;
                 match block_type {
                     "tool_use" => {
-                        let id = event
-                            .data
-                            .get("id")?
-                            .as_str()?
-                            .to_string();
-                        let name = event
-                            .data
-                            .get("name")?
-                            .as_str()?
-                            .to_string();
+                        let id = event.data.get("id")?.as_str()?.to_string();
+                        let name = event.data.get("name")?.as_str()?.to_string();
 
                         self.current_tool_use = Some(ToolUseBuilder {
                             id,
@@ -148,24 +138,15 @@ impl EventStream {
 
                 match delta_type {
                     "text_delta" => {
-                        let text = delta
-                            .get("text")?
-                            .as_str()?
-                            .to_string();
+                        let text = delta.get("text")?.as_str()?.to_string();
                         Some(StreamEvent::TextDelta { text })
                     }
                     "thinking_delta" => {
-                        let thinking = delta
-                            .get("thinking")?
-                            .as_str()?
-                            .to_string();
+                        let thinking = delta.get("thinking")?.as_str()?.to_string();
                         Some(StreamEvent::ThinkingDelta { thinking })
                     }
                     "input_json_delta" => {
-                        let partial = delta
-                            .get("partial_json")?
-                            .as_str()?
-                            .to_string();
+                        let partial = delta.get("partial_json")?.as_str()?.to_string();
 
                         if let Some(ref mut tool) = self.current_tool_use {
                             tool.input_json.push_str(&partial);
@@ -209,15 +190,14 @@ impl EventStream {
                     .data
                     .get("usage")
                     .map(|u| TokenUsage {
-                        input_tokens: u.get("input_tokens").and_then(|v| v.as_u64()).unwrap_or(0) as usize,
-                        output_tokens: u.get("output_tokens").and_then(|v| v.as_u64()).unwrap_or(0) as usize,
+                        input_tokens: u.get("input_tokens").and_then(|v| v.as_u64()).unwrap_or(0)
+                            as usize,
+                        output_tokens: u.get("output_tokens").and_then(|v| v.as_u64()).unwrap_or(0)
+                            as usize,
                     })
                     .unwrap_or_default();
 
-                Some(StreamEvent::MessageComplete {
-                    stop_reason,
-                    usage,
-                })
+                Some(StreamEvent::MessageComplete { stop_reason, usage })
             }
             "message_stop" => {
                 debug!("Message stopped");

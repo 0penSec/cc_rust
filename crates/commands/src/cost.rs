@@ -1,7 +1,7 @@
 //! /cost command
 
-use async_trait::async_trait;
 use super::Command;
+use async_trait::async_trait;
 
 pub struct CostCommand;
 

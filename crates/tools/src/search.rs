@@ -5,9 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use tracing::debug;
 
-use claude_core::{
-    Tool, ToolContext, ToolInput, ToolOutput, ToolResult, PermissionMode,
-};
+use claude_core::{PermissionMode, Tool, ToolContext, ToolInput, ToolOutput, ToolResult};
 
 /// Glob tool for file pattern matching
 pub struct GlobTool;
@@ -145,9 +143,9 @@ impl Tool for GrepTool {
             Err(e) => return Ok(ToolOutput::error(format!("Invalid regex: {}", e))),
         };
 
-        let glob_matcher = input.include.and_then(|g| {
-            globset::Glob::new(&g).ok().map(|g| g.compile_matcher())
-        });
+        let glob_matcher = input
+            .include
+            .and_then(|g| globset::Glob::new(&g).ok().map(|g| g.compile_matcher()));
 
         let mut matches = Vec::new();
 
@@ -210,15 +208,19 @@ impl Tool for GrepTool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde_json::json;
     use tempfile::TempDir;
     use tokio::fs;
-    use serde_json::json;
 
     #[tokio::test]
     async fn test_glob() {
         let temp_dir = TempDir::new().unwrap();
-        fs::write(temp_dir.path().join("test.rs"), "").await.unwrap();
-        fs::write(temp_dir.path().join("test.txt"), "").await.unwrap();
+        fs::write(temp_dir.path().join("test.rs"), "")
+            .await
+            .unwrap();
+        fs::write(temp_dir.path().join("test.txt"), "")
+            .await
+            .unwrap();
 
         let tool = GlobTool;
         let ctx = ToolContext {
@@ -239,9 +241,12 @@ mod tests {
     #[tokio::test]
     async fn test_grep() {
         let temp_dir = TempDir::new().unwrap();
-        fs::write(temp_dir.path().join("hello.rs"), "fn main() { println!(\"Hello\"); }")
-            .await
-            .unwrap();
+        fs::write(
+            temp_dir.path().join("hello.rs"),
+            "fn main() { println!(\"Hello\"); }",
+        )
+        .await
+        .unwrap();
 
         let tool = GrepTool;
         let ctx = ToolContext {

@@ -1,4 +1,4 @@
-use reqwest::{Client, header};
+use reqwest::{header, Client};
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
@@ -31,9 +31,18 @@ pub struct ThinkingConfig {
 #[derive(Debug, Clone, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum ContentBlock {
-    Text { text: String },
-    Thinking { thinking: String, signature: String },
-    ToolUse { id: String, name: String, input: serde_json::Value },
+    Text {
+        text: String,
+    },
+    Thinking {
+        thinking: String,
+        signature: String,
+    },
+    ToolUse {
+        id: String,
+        name: String,
+        input: serde_json::Value,
+    },
 }
 
 /// Token usage

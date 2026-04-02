@@ -74,8 +74,8 @@ fn should_retry_error(error: &ClaudeError) -> bool {
 }
 
 fn calculate_delay(config: &RetryConfig, attempt: u32) -> Duration {
-    let exponential = config.base_delay.as_millis() as f64
-        * config.exponential_base.powi(attempt as i32);
+    let exponential =
+        config.base_delay.as_millis() as f64 * config.exponential_base.powi(attempt as i32);
     let delay_ms = exponential.min(config.max_delay.as_millis() as f64) as u64;
     // Add jitter (±25%)
     let jitter = (delay_ms as f64 * 0.25) as u64;

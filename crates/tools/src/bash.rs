@@ -6,9 +6,7 @@ use tokio::process::Command;
 use tokio::time::{timeout, Duration};
 use tracing::{debug, warn};
 
-use claude_core::{
-    Tool, ToolContext, ToolInput, ToolOutput, ToolResult, PermissionMode,
-};
+use claude_core::{PermissionMode, Tool, ToolContext, ToolInput, ToolOutput, ToolResult};
 
 /// Bash tool for executing shell commands
 pub struct BashTool {

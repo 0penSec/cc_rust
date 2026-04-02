@@ -1,4 +1,4 @@
-use claude_core::{Message, SessionId, ToolCallResult, message::ToolCall};
+use claude_core::{message::ToolCall, Message, SessionId, ToolCallResult};
 
 /// A conversation session
 #[derive(Debug, Clone)]
@@ -23,13 +23,13 @@ impl Conversation {
 
     pub fn add_user_message(&mut self, content: impl Into<String>) {
         self.messages.push(Message::User {
-            content: claude_core::message::MessageContent::Text(content.into())
+            content: claude_core::message::MessageContent::Text(content.into()),
         });
     }
 
     pub fn add_assistant_message(&mut self, content: impl Into<String>) {
         self.messages.push(Message::Assistant {
-            content: claude_core::message::AssistantContent::Text(content.into())
+            content: claude_core::message::AssistantContent::Text(content.into()),
         });
     }
 
@@ -93,7 +93,9 @@ impl ConversationBuilder {
             session_id: self.session_id.unwrap_or_default(),
             messages: Vec::new(),
             system_prompt: self.system_prompt,
-            model: self.model.unwrap_or_else(|| "claude-sonnet-4-6".to_string()),
+            model: self
+                .model
+                .unwrap_or_else(|| "claude-sonnet-4-6".to_string()),
             max_tokens: self.max_tokens.unwrap_or(4096),
             total_input_tokens: 0,
             total_output_tokens: 0,

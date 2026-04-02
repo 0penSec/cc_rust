@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use claude_core::{Tool, ToolDefinition};
+use std::collections::HashMap;
 
 /// Registry for managing available tools
 pub struct ToolRegistry {

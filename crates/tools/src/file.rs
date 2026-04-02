@@ -6,7 +6,7 @@ use tokio::fs;
 use tracing::debug;
 
 use claude_core::{
-    ClaudeResult, Tool, ToolContext, ToolInput, ToolOutput, ToolResult, PermissionMode,
+    ClaudeResult, PermissionMode, Tool, ToolContext, ToolInput, ToolOutput, ToolResult,
 };
 
 /// File read tool
@@ -66,20 +66,16 @@ impl Tool for FileReadTool {
         }
 
         // Read file content
-        let content = fs::read_to_string(&path).await.map_err(|e| {
-            claude_core::ClaudeError::Io(format!("Failed to read file: {}", e))
-        })?;
+        let content = fs::read_to_string(&path)
+            .await
+            .map_err(|e| claude_core::ClaudeError::Io(format!("Failed to read file: {}", e)))?;
 
         // Apply offset and limit if specified
         let lines: Vec<&str> = content.lines().collect();
         let offset = input.offset.unwrap_or(0);
         let limit = input.limit.unwrap_or(lines.len());
 
-        let selected_lines: Vec<&str> = lines
-            .into_iter()
-            .skip(offset)
-            .take(limit)
-            .collect();
+        let selected_lines: Vec<&str> = lines.into_iter().skip(offset).take(limit).collect();
 
         Ok(ToolOutput::success(selected_lines.join("\n")))
     }
@@ -129,9 +125,9 @@ impl Tool for FileWriteTool {
         }
 
         // Write file
-        fs::write(&path, input.content).await.map_err(|e| {
-            claude_core::ClaudeError::Io(format!("Failed to write file: {}", e))
-        })?;
+        fs::write(&path, input.content)
+            .await
+            .map_err(|e| claude_core::ClaudeError::Io(format!("Failed to write file: {}", e)))?;
 
         Ok(ToolOutput::success(format!(
             "Successfully wrote to {}",
@@ -179,9 +175,9 @@ impl Tool for FileEditTool {
         debug!("Editing file: {:?}", path);
 
         // Read current content
-        let content = fs::read_to_string(&path).await.map_err(|e| {
-            claude_core::ClaudeError::Io(format!("Failed to read file: {}", e))
-        })?;
+        let content = fs::read_to_string(&path)
+            .await
+            .map_err(|e| claude_core::ClaudeError::Io(format!("Failed to read file: {}", e)))?;
 
         // Count occurrences
         let occurrences = content.matches(&input.old_string).count();
@@ -202,9 +198,9 @@ impl Tool for FileEditTool {
         let new_content = content.replacen(&input.old_string, &input.new_string, 1);
 
         // Write back
-        fs::write(&path, new_content).await.map_err(|e| {
-            claude_core::ClaudeError::Io(format!("Failed to write file: {}", e))
-        })?;
+        fs::write(&path, new_content)
+            .await
+            .map_err(|e| claude_core::ClaudeError::Io(format!("Failed to write file: {}", e)))?;
 
         Ok(ToolOutput::success(format!(
             "Successfully edited {}",
@@ -226,8 +222,8 @@ fn resolve_path(path: &str, working_dir: &std::path::Path) -> ClaudeResult<PathB
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::TempDir;
     use serde_json::json;
+    use tempfile::TempDir;
 
     #[tokio::test]
     async fn test_file_read() {

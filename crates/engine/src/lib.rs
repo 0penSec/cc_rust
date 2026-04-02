@@ -56,9 +56,7 @@ impl QueryEngine {
     }
 
     pub fn create_conversation(&mut self, session_id: SessionId) -> &mut Conversation {
-        let conversation = Conversation::builder()
-            .session_id(session_id)
-            .build();
+        let conversation = Conversation::builder().session_id(session_id).build();
         self.conversations.insert(session_id, conversation);
         self.conversations.get_mut(&session_id).unwrap()
     }

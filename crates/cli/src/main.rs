@@ -2,10 +2,10 @@ use anyhow::Result;
 use clap::{Parser, Subcommand};
 use std::io::Write;
 use std::path::PathBuf;
-use tracing::{info, debug};
+use tracing::{debug, info};
 
 use claude_core::{SessionId, ToolContext};
-use claude_engine::{EngineConfig, ToolLoop, Conversation};
+use claude_engine::{Conversation, EngineConfig, ToolLoop};
 use claude_tools::default_registry;
 
 /// Claude Code - AI-powered coding assistant
@@ -66,13 +66,7 @@ async fn main() -> Result<()> {
 
     // Initialize logging
     let subscriber = tracing_subscriber::fmt()
-        .with_env_filter(
-            if cli.verbose {
-                "debug"
-            } else {
-                "info"
-            }
-        )
+        .with_env_filter(if cli.verbose { "debug" } else { "info" })
         .with_target(false)
         .with_thread_ids(false)
         .compact()
@@ -105,29 +99,14 @@ async fn main() -> Result<()> {
             return Ok(());
         }
         Some(Commands::Run { prompt }) => {
-            run_single_prompt(
-                &cli.api_key,
-                &cli.model,
-                &working_dir,
-                &prompt,
-            ).await?;
+            run_single_prompt(&cli.api_key, &cli.model, &working_dir, &prompt).await?;
         }
         Some(Commands::Chat { message }) => {
-            run_interactive(
-                &cli.api_key,
-                &cli.model,
-                &working_dir,
-                message,
-            ).await?;
+            run_interactive(&cli.api_key, &cli.model, &working_dir, message).await?;
         }
         None => {
             // Default: interactive mode
-            run_interactive(
-                &cli.api_key,
-                &cli.model,
-                &working_dir,
-                None,
-            ).await?;
+            run_interactive(&cli.api_key, &cli.model, &working_dir, None).await?;
         }
     }
 
@@ -209,8 +188,10 @@ async fn run_single_prompt(
     match tool_loop.run(&mut conversation, &tool_ctx).await {
         Ok(usage) => {
             println!("\n[Conversation complete]");
-            println!("Tokens used: input={}, output={}",
-                usage.input_tokens, usage.output_tokens);
+            println!(
+                "Tokens used: input={}, output={}",
+                usage.input_tokens, usage.output_tokens
+            );
         }
         Err(e) => {
             eprintln!("Error: {}", e);
@@ -358,5 +339,6 @@ You have access to these tools:
 - grep: Search file contents
 - web_fetch: Fetch web pages
 
-Always confirm before making destructive changes."#.to_string()
+Always confirm before making destructive changes."#
+        .to_string()
 }

@@ -3,9 +3,7 @@ use schemars::{schema_for, JsonSchema};
 use serde::{Deserialize, Serialize};
 use tracing::debug;
 
-use claude_core::{
-    Tool, ToolContext, ToolInput, ToolOutput, ToolResult, PermissionMode,
-};
+use claude_core::{PermissionMode, Tool, ToolContext, ToolInput, ToolOutput, ToolResult};
 
 /// Web fetch tool for retrieving URL content
 pub struct WebFetchTool;
@@ -121,7 +119,7 @@ impl Tool for WebSearchTool {
         // - SerpAPI
 
         Ok(ToolOutput::error(
-            "Web search not yet implemented. Consider using web_fetch with a known URL instead."
+            "Web search not yet implemented. Consider using web_fetch with a known URL instead.",
         ))
     }
 }
@@ -129,9 +127,9 @@ impl Tool for WebSearchTool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use wiremock::{MockServer, Mock, ResponseTemplate};
-    use wiremock::matchers::{method, path};
     use serde_json::json;
+    use wiremock::matchers::{method, path};
+    use wiremock::{Mock, MockServer, ResponseTemplate};
 
     #[tokio::test]
     async fn test_web_fetch() {

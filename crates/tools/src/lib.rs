@@ -5,16 +5,15 @@
 
 pub mod bash;
 pub mod file;
+pub mod registry;
 pub mod search;
 pub mod web;
-pub mod registry;
 
 pub use bash::BashTool;
-pub use file::{FileReadTool, FileWriteTool, FileEditTool};
+pub use file::{FileEditTool, FileReadTool, FileWriteTool};
+pub use registry::ToolRegistry;
 pub use search::{GlobTool, GrepTool};
 pub use web::{WebFetchTool, WebSearchTool};
-pub use registry::ToolRegistry;
-
 
 /// Initialize the default tool registry with all built-in tools
 pub fn default_registry() -> ToolRegistry {

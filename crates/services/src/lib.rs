@@ -9,8 +9,8 @@
 
 pub mod api;
 pub mod auth;
-pub mod mcp;
 pub mod lsp;
+pub mod mcp;
 pub mod telemetry;
 
 pub use api::AnthropicClient;

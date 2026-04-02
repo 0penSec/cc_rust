@@ -7,17 +7,17 @@
 //! 4. Send tool results back
 //! 5. Repeat until stop_reason is not "tool_use"
 
-use std::io::Write;
 use futures::StreamExt;
+use std::io::Write;
 use tracing::{debug, error, info, trace, warn};
 
 use claude_core::{
-    ClaudeResult, Message, Tool, ToolContext, ToolInput, ToolCallResult,
-    message::{ToolCall, AssistantContent, MessageContent},
+    message::{AssistantContent, MessageContent, ToolCall},
+    ClaudeResult, Message, Tool, ToolCallResult, ToolContext, ToolInput,
 };
 
-use crate::conversation::Conversation;
 use crate::client::{AnthropicClient, MessagesRequest};
+use crate::conversation::Conversation;
 use crate::stream::{EventStream, StreamEvent, TokenUsage};
 
 /// Result of one turn in the conversation
@@ -134,7 +134,10 @@ impl ToolLoop {
                     _current_tool_call = Some(tool_call.clone());
                     tool_calls.push(tool_call);
                 }
-                StreamEvent::MessageComplete { stop_reason, usage: u } => {
+                StreamEvent::MessageComplete {
+                    stop_reason,
+                    usage: u,
+                } => {
                     usage = u;
 
                     // Add assistant message to conversation
@@ -152,20 +155,18 @@ impl ToolLoop {
                     match stop_reason.as_deref() {
                         Some("tool_use") | None if !tool_calls.is_empty() => {
                             // Execute tools and continue
-                            let results = self.execute_tool_calls(&tool_calls, tool_ctx
-                            ).await?;
+                            let results = self.execute_tool_calls(&tool_calls, tool_ctx).await?;
 
                             // Add tool results to conversation
                             for result in results {
                                 conversation.add_user_message(format!(
                                     "Tool result ({}): {}",
-                                    result.tool_call_id,
-                                    result.content
+                                    result.tool_call_id, result.content
                                 ));
                             }
 
                             return Ok(TurnResult::ToolCallsMade {
-                                count: tool_calls.len()
+                                count: tool_calls.len(),
                             });
                         }
                         Some("end_turn") | Some("stop_sequence") | None => {
@@ -203,19 +204,22 @@ impl ToolLoop {
             debug!("Executing tool: {} with input: {:?}", call.name, call.input);
 
             // Find the tool
-            let tool = self.tools.iter()
+            let tool = self
+                .tools
+                .iter()
                 .find(|t| t.name() == call.name)
                 .ok_or_else(|| {
-                    claude_core::ClaudeError::Execution(
-                        format!("Unknown tool: {}", call.name)
-                    )
+                    claude_core::ClaudeError::Execution(format!("Unknown tool: {}", call.name))
                 })?;
 
             // Execute
             let input = ToolInput::new(call.input.clone());
             let output = tool.execute(input, ctx).await?;
 
-            println!("[Tool result]: {}", &output.content[..output.content.len().min(200)]);
+            println!(
+                "[Tool result]: {}",
+                &output.content[..output.content.len().min(200)]
+            );
 
             results.push(ToolCallResult {
                 tool_call_id: call.id.clone(),
@@ -228,17 +232,18 @@ impl ToolLoop {
     }
 
     /// Build API request from conversation
-    fn build_request(&self,
-        conversation: &Conversation,
-    ) -> ClaudeResult<MessagesRequest> {
+    fn build_request(&self, conversation: &Conversation) -> ClaudeResult<MessagesRequest> {
         // Convert messages to API format
-        let messages: Vec<serde_json::Value> = conversation.messages
+        let messages: Vec<serde_json::Value> = conversation
+            .messages
             .iter()
             .filter_map(|m| self.convert_message(m))
             .collect();
 
         // Build tool schemas
-        let tools: Vec<serde_json::Value> = self.tools.iter()
+        let tools: Vec<serde_json::Value> = self
+            .tools
+            .iter()
             .map(|t| {
                 serde_json::json!({
                     "name": t.name(),
@@ -260,55 +265,49 @@ impl ToolLoop {
     }
 
     /// Convert internal Message to API format
-    fn convert_message(&self,
-        message: &Message,
-    ) -> Option<serde_json::Value> {
+    fn convert_message(&self, message: &Message) -> Option<serde_json::Value> {
         match message {
             Message::User { content } => {
                 let text = match content {
                     MessageContent::Text(t) => t.clone(),
-                    MessageContent::MultiContent(parts) => {
-                        parts.iter()
-                            .filter_map(|p| match p {
-                                claude_core::message::ContentPart::Text { text } => Some(text.clone()),
-                                _ => None,
-                            })
-                            .collect::<Vec<_>>()
-                            .join("")
-                    }
+                    MessageContent::MultiContent(parts) => parts
+                        .iter()
+                        .filter_map(|p| match p {
+                            claude_core::message::ContentPart::Text { text } => Some(text.clone()),
+                            _ => None,
+                        })
+                        .collect::<Vec<_>>()
+                        .join(""),
                 };
                 Some(serde_json::json!({
                     "role": "user",
                     "content": text,
                 }))
             }
-            Message::Assistant { content } => {
-                match content {
-                    AssistantContent::Text(text) => {
-                        Some(serde_json::json!({
-                            "role": "assistant",
-                            "content": text,
-                        }))
-                    }
-                    AssistantContent::ToolCalls(calls) => {
-                        let content: Vec<serde_json::Value> = calls.iter()
-                            .map(|call| {
-                                serde_json::json!({
-                                    "type": "tool_use",
-                                    "id": call.id,
-                                    "name": call.name,
-                                    "input": call.input,
-                                })
+            Message::Assistant { content } => match content {
+                AssistantContent::Text(text) => Some(serde_json::json!({
+                    "role": "assistant",
+                    "content": text,
+                })),
+                AssistantContent::ToolCalls(calls) => {
+                    let content: Vec<serde_json::Value> = calls
+                        .iter()
+                        .map(|call| {
+                            serde_json::json!({
+                                "type": "tool_use",
+                                "id": call.id,
+                                "name": call.name,
+                                "input": call.input,
                             })
-                            .collect();
+                        })
+                        .collect();
 
-                        Some(serde_json::json!({
-                            "role": "assistant",
-                            "content": content,
-                        }))
-                    }
+                    Some(serde_json::json!({
+                        "role": "assistant",
+                        "content": content,
+                    }))
                 }
-            }
+            },
             Message::System { .. } => None, // System is handled separately
         }
     }
