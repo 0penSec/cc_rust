@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use chrono::{DateTime, Utc};
 
 /// A message in the conversation
 #[derive(Debug, Clone, Serialize, Deserialize)]

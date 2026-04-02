@@ -1,6 +1,6 @@
 use std::time::Duration;
 use tokio::time::sleep;
-use tracing::{warn, error};
+use tracing::warn;
 
 use claude_core::ClaudeError;
 

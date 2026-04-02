@@ -15,7 +15,6 @@ pub use search::{GlobTool, GrepTool};
 pub use web::{WebFetchTool, WebSearchTool};
 pub use registry::ToolRegistry;
 
-use claude_core::{Tool, ToolDefinition};
 
 /// Initialize the default tool registry with all built-in tools
 pub fn default_registry() -> ToolRegistry {

@@ -40,8 +40,8 @@ impl Default for EngineConfig {
 
 /// Main query engine
 pub struct QueryEngine {
-    config: EngineConfig,
-    client: AnthropicClient,
+    _config: EngineConfig,
+    _client: AnthropicClient,
     conversations: std::collections::HashMap<SessionId, Conversation>,
 }
 
@@ -49,8 +49,8 @@ impl QueryEngine {
     pub fn new(config: EngineConfig) -> ClaudeResult<Self> {
         let client = AnthropicClient::new(config.client.clone())?;
         Ok(Self {
-            config,
-            client,
+            _config: config,
+            _client: client,
             conversations: std::collections::HashMap::new(),
         })
     }

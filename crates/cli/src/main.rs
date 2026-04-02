@@ -4,8 +4,8 @@ use std::io::Write;
 use std::path::PathBuf;
 use tracing::{info, debug};
 
-use claude_core::{SessionId, PermissionMode, ToolContext};
-use claude_engine::{QueryEngine, EngineConfig, ToolLoop, Conversation};
+use claude_core::{SessionId, ToolContext};
+use claude_engine::{EngineConfig, ToolLoop, Conversation};
 use claude_tools::default_registry;
 
 /// Claude Code - AI-powered coding assistant
@@ -182,7 +182,7 @@ async fn run_single_prompt(
     // Set up tool loop
     let mut tool_loop = ToolLoop::new(client);
     for name in registry.list() {
-        if let Some(tool) = registry.get(name) {
+        if let Some(_tool) = registry.get(name) {
             // We need to clone the tool, but Tool trait doesn't support cloning directly
             // For now, we'll just register by creating new instances
             match name {
@@ -244,7 +244,7 @@ async fn run_interactive(
         .build();
 
     // Initialize tool registry and loop
-    let registry = default_registry();
+    let _registry = default_registry();
     let mut tool_loop = ToolLoop::new(client);
 
     // Register tools

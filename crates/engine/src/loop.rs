@@ -112,7 +112,7 @@ impl ToolLoop {
 
         let mut text_buffer = String::new();
         let mut tool_calls: Vec<ToolCall> = Vec::new();
-        let mut current_tool_call: Option<ToolCall> = None;
+        let mut _current_tool_call: Option<ToolCall> = None;
         let mut usage = TokenUsage::default();
 
         // Process stream events
@@ -131,7 +131,7 @@ impl ToolLoop {
                     println!("\n[Tool: {}]", name);
 
                     let tool_call = ToolCall { id, name, input };
-                    current_tool_call = Some(tool_call.clone());
+                    _current_tool_call = Some(tool_call.clone());
                     tool_calls.push(tool_call);
                 }
                 StreamEvent::MessageComplete { stop_reason, usage: u } => {

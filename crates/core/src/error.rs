@@ -1,4 +1,3 @@
-use std::fmt;
 use thiserror::Error;
 
 /// Core error type for Claude Code

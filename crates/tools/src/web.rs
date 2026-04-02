@@ -1,7 +1,6 @@
 use async_trait::async_trait;
 use schemars::{schema_for, JsonSchema};
 use serde::{Deserialize, Serialize};
-use serde_json::json;
 use tracing::debug;
 
 use claude_core::{
@@ -112,8 +111,8 @@ impl Tool for WebSearchTool {
         PermissionMode::Ask
     }
 
-    async fn execute(&self, input: ToolInput, _ctx: &ToolContext) -> ToolResult {
-        let input: WebSearchInput = input.parse()?;
+    async fn execute(&self, _input: ToolInput, _ctx: &ToolContext) -> ToolResult {
+        let _input: WebSearchInput = _input.parse()?;
 
         // TODO: Implement actual search using an API like:
         // - Brave Search API
@@ -132,6 +131,7 @@ mod tests {
     use super::*;
     use wiremock::{MockServer, Mock, ResponseTemplate};
     use wiremock::matchers::{method, path};
+    use serde_json::json;
 
     #[tokio::test]
     async fn test_web_fetch() {

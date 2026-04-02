@@ -1,10 +1,9 @@
 use async_trait::async_trait;
 use schemars::{schema_for, JsonSchema};
 use serde::{Deserialize, Serialize};
-use serde_json::json;
 use std::path::PathBuf;
 use tokio::fs;
-use tracing::{debug, warn};
+use tracing::debug;
 
 use claude_core::{
     ClaudeResult, Tool, ToolContext, ToolInput, ToolOutput, ToolResult, PermissionMode,
@@ -228,6 +227,7 @@ fn resolve_path(path: &str, working_dir: &std::path::Path) -> ClaudeResult<PathB
 mod tests {
     use super::*;
     use tempfile::TempDir;
+    use serde_json::json;
 
     #[tokio::test]
     async fn test_file_read() {

@@ -15,7 +15,7 @@ impl PermissionManager {
         }
     }
 
-    pub fn check(&self, tool_name: &str, description: &str) -> PermissionResult {
+    pub fn check(&self, _tool_name: &str, description: &str) -> PermissionResult {
         match self.mode {
             PermissionMode::Bypass => PermissionResult::Allow,
             PermissionMode::Allow => PermissionResult::Allow,

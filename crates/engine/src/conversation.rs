@@ -1,4 +1,4 @@
-use claude_core::{Message, SessionId, ToolCallResult, message::{MessageRole, ToolCall}};
+use claude_core::{Message, SessionId, ToolCallResult, message::ToolCall};
 
 /// A conversation session
 #[derive(Debug, Clone)]

@@ -1,14 +1,13 @@
 use async_trait::async_trait;
 use schemars::{schema_for, JsonSchema};
 use serde::{Deserialize, Serialize};
-use serde_json::json;
 use std::process::Stdio;
 use tokio::process::Command;
 use tokio::time::{timeout, Duration};
 use tracing::{debug, warn};
 
 use claude_core::{
-    ClaudeResult, Tool, ToolContext, ToolInput, ToolOutput, ToolResult, PermissionMode,
+    Tool, ToolContext, ToolInput, ToolOutput, ToolResult, PermissionMode,
 };
 
 /// Bash tool for executing shell commands
@@ -147,6 +146,7 @@ impl Tool for BashTool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde_json::json;
 
     #[tokio::test]
     async fn test_bash_echo() {

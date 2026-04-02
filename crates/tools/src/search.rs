@@ -2,7 +2,6 @@ use async_trait::async_trait;
 use ignore::WalkBuilder;
 use schemars::{schema_for, JsonSchema};
 use serde::{Deserialize, Serialize};
-use serde_json::json;
 use std::path::PathBuf;
 use tracing::debug;
 
@@ -213,6 +212,7 @@ mod tests {
     use super::*;
     use tempfile::TempDir;
     use tokio::fs;
+    use serde_json::json;
 
     #[tokio::test]
     async fn test_glob() {
