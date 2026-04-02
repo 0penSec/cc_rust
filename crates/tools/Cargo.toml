@@ -34,3 +34,5 @@ reqwest = { workspace = true }
 mockall = { workspace = true }
 tempfile = { workspace = true }
 tokio-test = "0.4"
+wiremock = { workspace = true }
+futures = { workspace = true }
