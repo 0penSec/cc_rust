@@ -1,0 +1,117 @@
+# Claude Code Configuration File
+# Place this file at ~/.config/claude/config.toml (Linux/macOS)
+# or %APPDATA%\claude\config.toml (Windows)
+
+[api]
+# Your Anthropic API key (prefer using ANTHROPIC_API_KEY environment variable)
+# api_key = "sk-ant-..."
+
+# Base URL for API (for custom endpoints)
+# base_url = "https://api.anthropic.com"
+
+# Request timeout in seconds
+timeout_seconds = 120
+
+# Maximum retries for failed requests
+max_retries = 3
+
+# Retry delay in milliseconds
+retry_delay_ms = 1000
+
+[model]
+# Model name to use
+name = "claude-sonnet-4-6"
+
+# Maximum tokens per request
+max_tokens = 4096
+
+# Temperature (0.0 - 1.0)
+temperature = 0.7
+
+# Top-p sampling
+top_p = 0.9
+
+[tools]
+# Default permission mode: ask, auto, or deny
+permission_mode = "ask"
+
+[tools.bash]
+# Default timeout in seconds
+timeout_seconds = 300
+
+# Allowed commands (empty = allow all)
+allowed_commands = []
+
+# Blocked commands (safety defaults)
+blocked_commands = [
+    "rm -rf /",
+    "dd if=/dev/zero",
+    ":(){ :|:& };:",  # Fork bomb
+]
+
+[tools.file]
+# Maximum file size to read (1MB)
+max_read_size = 1048576
+
+# Maximum file size to write (1MB)
+max_write_size = 1048576
+
+# Allowed file extensions (empty = allow all)
+allowed_extensions = []
+
+# Blocked paths (glob patterns)
+blocked_paths = [
+    "/etc/passwd",
+    "/etc/shadow",
+    "~/.ssh/id_*",
+    "**/.env",
+]
+
+[tools.search]
+# Maximum results to return
+max_results = 100
+
+# Respect .gitignore
+respect_gitignore = true
+
+# Case sensitive by default
+case_sensitive = false
+
+[tools.web]
+# Maximum content length to fetch (100KB)
+max_content_length = 102400
+
+# Request timeout in seconds
+timeout_seconds = 30
+
+# Follow redirects
+follow_redirects = true
+
+# Allowed domains (empty = allow all)
+allowed_domains = []
+
+[ui]
+# Theme: light, dark, or auto
+theme = "auto"
+
+# Enable animations
+animations = true
+
+# Show token usage
+show_token_usage = true
+
+# Show cost estimation
+show_cost = true
+
+# Enable streaming output
+streaming = true
+
+# Verbose mode
+verbose = false
+
+# Working directory (overrides default)
+# working_dir = "/path/to/project"
+
+# Environment variables to pass to tools
+[env_vars]
+# CUSTOM_VAR = "value"
