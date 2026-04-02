@@ -1,0 +1,34 @@
+[package]
+name = "claude-engine"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "LLM query engine and conversation management"
+
+[dependencies]
+claude-core = { workspace = true }
+claude-services = { workspace = true }
+
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+tokio = { workspace = true }
+tokio-util = { workspace = true }
+futures = { workspace = true }
+tracing = { workspace = true }
+reqwest = { workspace = true }
+reqwest-eventsource = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+dashmap = { workspace = true }
+rand = "0.8"
+
+[dev-dependencies]
+mockall = { workspace = true }
+wiremock = { workspace = true }
+tokio-test = "0.4"

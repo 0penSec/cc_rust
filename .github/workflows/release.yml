@@ -1,0 +1,168 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
+
+permissions:
+  contents: write
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      release_id: ${{ steps.create_release.outputs.id }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+          git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD~1)..HEAD >> $GITHUB_OUTPUT || echo "- Release ${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Claude Code RS ${{ github.ref_name }}
+          body: |
+            ## Claude Code RS ${{ github.ref_name }}
+
+            AI-powered coding assistant written in Rust.
+
+            ### Installation
+
+            Download the binary for your platform from the assets below.
+
+            #### Linux/macOS
+            ```bash
+            tar xzf claude-code-*-$(uname -m).tar.gz
+            chmod +x claude
+            sudo mv claude /usr/local/bin/
+            ```
+
+            #### Windows
+            Extract the zip file and add the directory to your PATH.
+
+            ### Quick Start
+            ```bash
+            export ANTHROPIC_API_KEY="your-api-key"
+            claude
+            ```
+
+            ### Changelog
+            ${{ steps.changelog.outputs.CHANGELOG }}
+          draft: false
+          prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
+
+  build-and-upload:
+    name: Build and Upload Release Assets
+    needs: create-release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Linux
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            binary: claude
+            asset_name: claude-code-x86_64-unknown-linux-gnu.tar.gz
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            binary: claude
+            asset_name: claude-code-aarch64-unknown-linux-gnu.tar.gz
+          # macOS
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            binary: claude
+            asset_name: claude-code-x86_64-apple-darwin.tar.gz
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            binary: claude
+            asset_name: claude-code-aarch64-apple-darwin.tar.gz
+          # Windows
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            binary: claude.exe
+            asset_name: claude-code-x86_64-pc-windows-msvc.zip
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install cross-compilation tools (Linux ARM)
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+          echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
+
+      - name: Cache cargo dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Build release binary
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Package binary (Unix)
+        if: matrix.os != 'windows-latest'
+        run: |
+          cd target/${{ matrix.target }}/release
+          tar czvf ../../../${{ matrix.asset_name }} ${{ matrix.binary }}
+          cd ../../..
+          sha256sum ${{ matrix.asset_name }} > ${{ matrix.asset_name }}.sha256
+
+      - name: Package binary (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          cd target/${{ matrix.target }}/release
+          7z a ../../../${{ matrix.asset_name }} ${{ matrix.binary }}
+          cd ../../..
+          certutil -hashfile ${{ matrix.asset_name }} SHA256 > ${{ matrix.asset_name }}.sha256
+
+      - name: Upload Release Asset
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ${{ matrix.asset_name }}
+            ${{ matrix.asset_name }}.sha256
+
+  publish-crate:
+    name: Publish to crates.io
+    needs: create-release
+    runs-on: ubuntu-latest
+    if: ${{ !contains(github.ref_name, 'alpha') && !contains(github.ref_name, 'beta') }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Verify package
+        run: |
+          cargo package --allow-dirty --no-verify
+
+      # Uncomment to enable auto-publish to crates.io
+      # - name: Publish to crates.io
+      #   env:
+      #     CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+      #   run: |
+      #     cargo publish --allow-dirty -p claude-core
+      #     cargo publish --allow-dirty -p claude-engine
+      #     cargo publish --allow-dirty -p claude-tools
+      #     cargo publish --allow-dirty -p claude
