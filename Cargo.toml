@@ -86,7 +86,6 @@ rayon = "1.10"
 indexmap = { version = "2.7", features = ["serde"] }
 
 # Git operations
-git2 = { version = "0.19", default-features = false }
 gix = { version = "0.68", default-features = false }
 
 # Authentication & Security
