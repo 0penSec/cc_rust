@@ -584,4 +584,83 @@ test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 
 ---
 
+## 🔗 集成测试
+
+### 新增集成测试文件（位于 `tests/` 目录）
+
+| 文件 | 测试数 | 测试内容 |
+|------|--------|----------|
+| `tool_integration_test.rs` | 11个 | 工具注册表、工具组合、并发执行 |
+| `conversation_integration_test.rs` | 14个 | 对话管理、消息流转 |
+| `cli_integration_test.rs` | 16个 | 命令行参数解析 |
+
+### 集成测试 vs 单元测试
+
+| 特性 | 单元测试 | 集成测试 |
+|------|----------|----------|
+| 位置 | `src/` 文件中 | `tests/` 目录下 |
+| 范围 | 单个函数/模块 | 多个模块协作 |
+| 依赖 |  mock/隔离 | 真实组件交互 |
+| 速度 | 快（毫秒级） | 较慢（百毫秒级） |
+
+### 集成测试示例
+
+```rust
+// tests/tool_integration_test.rs
+#[tokio::test]
+async fn test_tools_workflow_write_read_search() {
+    let temp_dir = TempDir::new().unwrap();
+    let ctx = create_test_context(&temp_dir);
+
+    // 1. 写入文件
+    let write_tool = FileWriteTool;
+    let write_result = write_tool.execute(input, &ctx).await.unwrap();
+    assert!(!write_result.is_error);
+
+    // 2. 读取文件
+    let read_tool = FileReadTool;
+    let read_result = read_tool.execute(input, &ctx).await.unwrap();
+    assert!(read_result.content.contains("Hello"));
+
+    // 3. 搜索内容
+    let grep_tool = GrepTool;
+    let grep_result = grep_tool.execute(input, &ctx).await.unwrap();
+    assert!(grep_result.content.contains("pattern"));
+}
+```
+
+### 运行集成测试
+
+```bash
+# 运行所有测试（包括单元测试和集成测试）
+cargo test --all
+
+# 只运行集成测试
+cargo test --test tool_integration_test
+cargo test --test conversation_integration_test
+cargo test --test cli_integration_test
+
+# 运行特定集成测试
+cargo test test_tools_workflow_write_read_search
+```
+
+---
+
+## 📈 当前测试统计
+
+### 单元测试（内联）
+- `crates/tools`: 8个测试
+- `crates/engine`: 3个测试
+- **小计**: 11个
+
+### 集成测试（`tests/` 目录）
+- `tool_integration_test.rs`: 11个测试
+- `conversation_integration_test.rs`: 14个测试
+- `cli_integration_test.rs`: 16个测试
+- **小计**: 41个
+
+### 总计: 52个测试 ✅
+
+---
+
 > 测试是代码质量的重要保障，建议随着开发持续补充测试用例！
