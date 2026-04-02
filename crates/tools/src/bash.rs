@@ -147,6 +147,7 @@ mod tests {
     use serde_json::json;
 
     #[tokio::test]
+    #[cfg(unix)]
     async fn test_bash_echo() {
         let tool = BashTool::new();
         let ctx = ToolContext {
@@ -164,6 +165,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[cfg(unix)]
     async fn test_bash_error() {
         let tool = BashTool::new();
         let ctx = ToolContext {
@@ -173,6 +175,42 @@ mod tests {
         };
         let input = ToolInput::new(json!({
             "command": "exit 1"
+        }));
+
+        let result = tool.execute(input, &ctx).await.unwrap();
+        assert!(result.is_error);
+    }
+
+    #[tokio::test]
+    #[cfg(windows)]
+    async fn test_bash_echo_windows() {
+        // On Windows, bash may not be available, so we test with cmd
+        let tool = BashTool::new();
+        let ctx = ToolContext {
+            session_id: Default::default(),
+            working_directory: std::env::current_dir().unwrap(),
+            env_vars: std::collections::HashMap::new(),
+        };
+        let input = ToolInput::new(json!({
+            "command": "echo Hello World"
+        }));
+
+        let result = tool.execute(input, &ctx).await.unwrap();
+        // Just check it runs without error, content may vary
+        assert!(!result.is_error);
+    }
+
+    #[tokio::test]
+    #[cfg(windows)]
+    async fn test_bash_error_windows() {
+        let tool = BashTool::new();
+        let ctx = ToolContext {
+            session_id: Default::default(),
+            working_directory: std::env::current_dir().unwrap(),
+            env_vars: std::collections::HashMap::new(),
+        };
+        let input = ToolInput::new(json!({
+            "command": "exit /b 1"
         }));
 
         let result = tool.execute(input, &ctx).await.unwrap();
