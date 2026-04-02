@@ -81,7 +81,7 @@ impl Tool for BashTool {
 
         let cwd = input
             .cwd
-            .map(|p| std::path::PathBuf::from(p))
+            .map(std::path::PathBuf::from)
             .unwrap_or_else(|| ctx.working_directory.clone());
 
         let mut cmd = Command::new("bash");

@@ -1,7 +1,7 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use std::io::Write;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use tracing::{debug, info};
 
 use claude_core::{SessionId, ToolContext};
@@ -124,7 +124,7 @@ async fn list_tools() {
     }
 }
 
-fn show_config(api_key: &str, model: &str, working_dir: &PathBuf) -> Result<()> {
+fn show_config(api_key: &str, model: &str, working_dir: &Path) -> Result<()> {
     println!("Configuration:");
     println!("  API Key: {}...", &api_key[..api_key.len().min(10)]);
     println!("  Model: {}", model);
@@ -135,7 +135,7 @@ fn show_config(api_key: &str, model: &str, working_dir: &PathBuf) -> Result<()> 
 async fn run_single_prompt(
     api_key: &str,
     model: &str,
-    working_dir: &PathBuf,
+    working_dir: &Path,
     prompt: &str,
 ) -> Result<()> {
     println!("Running: {}\n", prompt);
@@ -180,7 +180,7 @@ async fn run_single_prompt(
     // Create tool context
     let tool_ctx = ToolContext {
         session_id: SessionId::new(),
-        working_directory: working_dir.clone(),
+        working_directory: working_dir.to_path_buf(),
         env_vars: std::env::vars().collect(),
     };
 
@@ -204,7 +204,7 @@ async fn run_single_prompt(
 async fn run_interactive(
     api_key: &str,
     model: &str,
-    working_dir: &PathBuf,
+    working_dir: &Path,
     initial_message: Option<String>,
 ) -> Result<()> {
     println!("╔══════════════════════════════════════════╗");
@@ -240,7 +240,7 @@ async fn run_interactive(
     // Tool context
     let tool_ctx = ToolContext {
         session_id: SessionId::new(),
-        working_directory: working_dir.clone(),
+        working_directory: working_dir.to_path_buf(),
         env_vars: std::env::vars().collect(),
     };
 
