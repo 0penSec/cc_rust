@@ -7,10 +7,10 @@ license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
 description = "Claude Code CLI - AI-powered coding assistant"
-default-run = "claude"
+default-run = "claude_rs"
 
 [[bin]]
-name = "claude"
+name = "claude_rs"
 path = "src/main.rs"
 
 [dependencies]

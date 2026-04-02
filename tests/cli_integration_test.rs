@@ -10,7 +10,7 @@ use std::env;
 /// 测试 --version 输出
 #[test]
 fn test_cli_version() {
-    let mut cmd = Command::cargo_bin("claude").unwrap();
+    let mut cmd = Command::cargo_bin("claude_rs").unwrap();
     cmd.arg("--version");
     cmd.assert()
         .success()
@@ -20,7 +20,7 @@ fn test_cli_version() {
 /// 测试 --help 输出
 #[test]
 fn test_cli_help() {
-    let mut cmd = Command::cargo_bin("claude").unwrap();
+    let mut cmd = Command::cargo_bin("claude_rs").unwrap();
     cmd.arg("--help");
     cmd.assert()
         .success()
@@ -35,7 +35,7 @@ fn test_cli_help() {
 /// 测试 tools 子命令
 #[test]
 fn test_cli_tools_command() {
-    let mut cmd = Command::cargo_bin("claude").unwrap();
+    let mut cmd = Command::cargo_bin("claude_rs").unwrap();
     cmd.arg("--api-key")
         .arg("test-key")
         .arg("tools");
@@ -53,7 +53,7 @@ fn test_cli_missing_api_key() {
     let original = env::var("ANTHROPIC_API_KEY").ok();
     env::remove_var("ANTHROPIC_API_KEY");
 
-    let mut cmd = Command::cargo_bin("claude").unwrap();
+    let mut cmd = Command::cargo_bin("claude_rs").unwrap();
     cmd.arg("tools");
     cmd.assert()
         .failure()
@@ -68,7 +68,7 @@ fn test_cli_missing_api_key() {
 /// 测试无效的子命令
 #[test]
 fn test_cli_invalid_command() {
-    let mut cmd = Command::cargo_bin("claude").unwrap();
+    let mut cmd = Command::cargo_bin("claude_rs").unwrap();
     cmd.arg("--api-key")
         .arg("test-key")
         .arg("invalid-command");
@@ -80,7 +80,7 @@ fn test_cli_invalid_command() {
 /// 测试 config 子命令
 #[test]
 fn test_cli_config_command() {
-    let mut cmd = Command::cargo_bin("claude").unwrap();
+    let mut cmd = Command::cargo_bin("claude_rs").unwrap();
     cmd.arg("--api-key")
         .arg("test-api-key-12345")
         .arg("config");
@@ -95,7 +95,7 @@ fn test_cli_config_command() {
 /// 测试 --model 参数
 #[test]
 fn test_cli_model_flag() {
-    let mut cmd = Command::cargo_bin("claude").unwrap();
+    let mut cmd = Command::cargo_bin("claude_rs").unwrap();
     cmd.arg("--api-key")
         .arg("test-key")
         .arg("--model")
@@ -109,7 +109,7 @@ fn test_cli_model_flag() {
 /// 测试 --verbose 标志
 #[test]
 fn test_cli_verbose_flag() {
-    let mut cmd = Command::cargo_bin("claude").unwrap();
+    let mut cmd = Command::cargo_bin("claude_rs").unwrap();
     cmd.arg("--api-key")
         .arg("test-key")
         .arg("--verbose")
@@ -125,7 +125,7 @@ fn test_cli_working_dir_flag() {
     use std::path::PathBuf;
 
     let temp_dir = std::env::temp_dir();
-    let mut cmd = Command::cargo_bin("claude").unwrap();
+    let mut cmd = Command::cargo_bin("claude_rs").unwrap();
     cmd.arg("--api-key")
         .arg("test-key")
         .arg("--working-dir")
@@ -139,7 +139,7 @@ fn test_cli_working_dir_flag() {
 /// 测试 run 子命令的帮助
 #[test]
 fn test_cli_run_help() {
-    let mut cmd = Command::cargo_bin("claude").unwrap();
+    let mut cmd = Command::cargo_bin("claude_rs").unwrap();
     cmd.arg("--api-key")
         .arg("test-key")
         .arg("run")
@@ -152,7 +152,7 @@ fn test_cli_run_help() {
 /// 测试 chat 子命令的帮助
 #[test]
 fn test_cli_chat_help() {
-    let mut cmd = Command::cargo_bin("claude").unwrap();
+    let mut cmd = Command::cargo_bin("claude_rs").unwrap();
     cmd.arg("--api-key")
         .arg("test-key")
         .arg("chat")
@@ -168,7 +168,7 @@ fn test_cli_env_api_key() {
     // 设置环境变量
     env::set_var("ANTHROPIC_API_KEY", "env-test-key");
 
-    let mut cmd = Command::cargo_bin("claude").unwrap();
+    let mut cmd = Command::cargo_bin("claude_rs").unwrap();
     cmd.arg("config");
     cmd.assert()
         .success()
@@ -188,7 +188,7 @@ fn test_binary_exists() {
 /// 测试多个参数组合
 #[test]
 fn test_cli_multiple_flags() {
-    let mut cmd = Command::cargo_bin("claude").unwrap();
+    let mut cmd = Command::cargo_bin("claude_rs").unwrap();
     cmd.arg("--api-key")
         .arg("test-key")
         .arg("--model")
@@ -201,7 +201,7 @@ fn test_cli_multiple_flags() {
 /// 测试空参数处理
 #[test]
 fn test_cli_empty_prompt() {
-    let mut cmd = Command::cargo_bin("claude").unwrap();
+    let mut cmd = Command::cargo_bin("claude_rs").unwrap();
     cmd.arg("--api-key")
         .arg("test-key")
         .arg("run")
