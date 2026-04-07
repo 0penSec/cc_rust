@@ -8,7 +8,9 @@ claude-code-rs/
 │   ├── core/          # 核心类型和 Trait 定义
 │   ├── engine/        # LLM 引擎和对话管理
 │   ├── tools/         # 工具实现（bash、文件操作等）
+│   ├── memory/        # 持久化记忆系统
 │   ├── cli/           # 命令行界面
+│   ├── tui/           # 终端用户界面
 │   └── ...
 ```
 
@@ -520,12 +522,13 @@ async fn run_interactive(api_key, model, working_dir, initial_message, config) {
         print!("> ");              // 显示提示符
         std::io::stdin().read_line(&mut input)?;  // 读取输入
         
-        // 处理内置命令
+        // 处理内置命令（支持完整命令和快捷方式）
         match input {
-            "exit" | "quit" => break,    // 退出
-            "help" => print_help(),       // 帮助
-            "tools" => list_tools().await, // 列出工具
-            "clear" => print!("\x1B[2J"),  // 清屏
+            "exit" | "quit" | ":q" => break,       // 退出
+            "help" | ":h" => print_help(),          // 帮助
+            "tools" | ":t" => list_tools().await,   // 列出工具
+            "clear" | ":c" => print!("\x1B[2J\x1B[1;1H"), // 清屏
+            "context" | ":ctx" => show_context(),   // 显示对话上下文
             _ => {
                 // 发送到 Claude 处理
                 conversation.add_user_message(input);
@@ -697,10 +700,276 @@ pub enum ClaudeError {
 
 ---
 
-## 八、扩展建议
+## 八、Memory crate（记忆系统）
+
+### 8.1 概述
+
+**Claude Memory** 是一个基于文件的持久化记忆系统，灵感来自 claude-code-main。
+
+**核心特性：**
+- **基于文件的存储**：每条记忆是一个独立的 Markdown 文件
+- **四种记忆类型**：User、Feedback、Project、Reference
+- **两步保存法**：写入独立文件 + 更新 MEMORY.md 索引
+- **索引截断**：MEMORY.md 限制 200行/25KB，防止过大
+
+**存储结构：**
+```
+~/.local/share/claude-code/memory/
+└── projects/
+    └── {project_slug}/
+        └── memory/
+            ├── MEMORY.md              # 索引文件
+            ├── user_role.md           # 用户角色
+            ├── feedback_testing.md    # 测试反馈
+            └── reference_api_docs.md  # API文档链接
+```
+
+---
+
+### 8.2 types.rs - 核心类型定义
+
+**MemoryType（记忆类型枚举）：**
+```rust
+pub enum MemoryType {
+    User,      // 用户信息：角色、偏好、知识水平
+    Feedback,  // 反馈信息：工作方式指导
+    Project,   // 项目信息：上下文、截止日期
+    Reference, // 参考资料：外部系统链接
+}
+```
+
+**核心结构体：**
+
+| 结构体 | 说明 |
+|--------|------|
+| `Memory` | 完整的记忆（路径、frontmatter、内容、修改时间） |
+| `MemoryHeader` | 轻量级头部（用于索引） |
+| `MemoryFrontmatter` | 元数据（name、description、type） |
+| `MemoryConfig` | 配置（路径、限制等） |
+
+**类型方法：**
+```rust
+// 获取所有类型
+MemoryType::all() -> &[MemoryType]
+
+// 类型 ↔ 字符串转换
+memory_type.as_str() -> "user" | "feedback" | ...
+"user".parse::<MemoryType>()
+
+// 获取系统提示词说明
+memory_type.when_to_save() -> "何时保存这种记忆"
+memory_type.how_to_use() -> "如何使用这种记忆"
+```
+
+---
+
+### 8.3 storage.rs - 存储操作
+
+**MemoryStorage（存储管理器）：**
+```rust
+pub struct MemoryStorage {
+    config: MemoryConfig,
+    project_slug: String,
+}
+```
+
+**核心方法：**
+
+| 方法 | 说明 |
+|------|------|
+| `new(config, project_slug)` | 创建存储实例 |
+| `memory_dir()` | 获取记忆目录路径 |
+| `entrypoint_path()` | 获取 MEMORY.md 路径 |
+| `save_memory(filename, name, desc, type, content)` | 保存记忆文件 |
+| `read_memory(filename)` | 读取记忆文件 |
+| `scan_memories()` | 扫描所有记忆（返回 MemoryHeader 列表） |
+| `delete_memory(filename)` | 删除记忆文件 |
+| `read_entrypoint()` | 读取 MEMORY.md |
+| `write_entrypoint(content)` | 写入 MEMORY.md（自动截断） |
+| `update_entrypoint_index(filename, name, desc)` | 向索引添加条目 |
+
+**文件格式：**
+```markdown
+---
+name: 用户角色
+description: 用户是资深 Rust 工程师
+type: user
+---
+
+详细内容...
+```
+
+---
+
+### 8.4 retrieval.rs - 记忆检索
+
+**基于关键词的相关性搜索：**
+```rust
+pub struct MemoryRetriever;
+
+impl MemoryRetriever {
+    // 查找相关记忆
+    pub async fn find_relevant(
+        storage: &MemoryStorage,
+        query: &str,
+        limit: usize,
+    ) -> Result<Vec<RetrievedMemory>>
+
+    // 格式化记忆为提示词
+    pub fn format_memories_for_prompt(memories: &[RetrievedMemory]) -> String
+
+    // 获取所有记忆摘要
+    pub async fn get_all_memories_summary(storage: &MemoryStorage) -> Result<String>
+}
+```
+
+**评分机制：**
+- 描述匹配: +0.5（权重最高）
+- 文件名匹配: +0.3
+- 类型匹配: +0.2
+
+**输出格式：**
+```markdown
+## Relevant Memories
+
+### user_role.md (85%)
+
+---
+name: 用户角色
+description: 用户是资深工程师
+type: user
+---
+
+用户有10年Rust经验...
+
+---
+```
+
+---
+
+### 8.5 frontmatter.rs - 元数据解析
+
+**支持的格式：**
+
+1. **YAML 格式**（默认）：
+```yaml
+---
+name: value
+description: value
+type: user
+---
+```
+
+2. **TOML 格式**（兼容）：
+```toml
++++
+name = "value"
+description = "value"
+type = "user"
++++
+```
+
+**核心函数：**
+```rust
+// 解析 frontmatter
+pub fn parse_frontmatter(content: &str) -> (HashMap<String, String>, String)
+
+// 生成 frontmatter
+pub fn format_frontmatter(name: &str, description: &str, memory_type: &str) -> String
+```
+
+---
+
+### 8.6 prompt.rs - 系统提示词构建
+
+**build_memory_prompt 函数：**
+```rust
+pub async fn build_memory_prompt(storage: &MemoryStorage) -> Result<String>
+```
+
+**生成的提示词结构：**
+```markdown
+You have access to a memory system that persists across conversations...
+
+## Memory System Overview
+
+The memory system has four types:
+- user: ...
+- feedback: ...
+- project: ...
+- reference: ...
+
+## Available Memories
+
+- [user] user_role.md — 用户是资深工程师
+- [reference] api_docs.md — API文档链接
+```
+
+---
+
+### 8.7 使用示例
+
+**完整使用流程：**
+```rust
+use claude_memory::{MemoryStorage, MemoryConfig, MemoryType, MemoryRetriever};
+
+async fn example() -> Result<()> {
+    // 1. 创建存储
+    let config = MemoryConfig::default();
+    let storage = MemoryStorage::new(config, "my-project");
+
+    // 2. 保存记忆
+    storage.save_memory(
+        "user_role.md",
+        "用户角色",
+        "用户是资深 Rust 工程师",
+        MemoryType::User,
+        "详细内容...",
+    ).await?;
+
+    // 3. 更新索引
+    storage.update_entrypoint_index(
+        "user_role.md",
+        "用户角色",
+        "用户是资深 Rust 工程师",
+    ).await?;
+
+    // 4. 搜索相关记忆
+    let results = MemoryRetriever::find_relevant(&storage, "rust", 5).await?;
+
+    // 5. 生成系统提示词
+    let prompt = claude_memory::build_memory_prompt(&storage).await?;
+
+    Ok(())
+}
+```
+
+---
+
+### 8.8 配置说明
+
+**MemoryConfig 默认值：**
+```rust
+MemoryConfig {
+    base_dir: "~/.local/share/claude-code/memory",  // Linux
+    max_entrypoint_lines: 200,    // MEMORY.md 最大行数
+    max_entrypoint_bytes: 25_000, // MEMORY.md 最大字节
+    max_memory_files: 200,        // 最多扫描文件数
+}
+```
+
+**目录位置（按操作系统）：**
+- Linux: `~/.local/share/claude-code/memory/`
+- macOS: `~/Library/Application Support/com.anthropic.claude-code/memory/`
+- Windows: `%APPDATA%/anthropic/claude-code/memory/`
+
+---
+
+## 九、扩展建议
 
 1. **添加新工具**：按照 5.1 节的流程
 2. **支持新模型**：更新 `ModelConfig` 和 API 调用
 3. **添加 UI 组件**：在 `tui` crate 中实现
-4. **持久化**：使用 `data_dir()` 保存会话历史
-5. **插件系统**：动态加载外部工具
+4. **会话持久化**：使用 `data_dir()` 保存对话历史
+5. **记忆系统增强**：添加向量搜索、自动记忆提取
+6. **插件系统**：动态加载外部工具
