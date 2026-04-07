@@ -83,24 +83,18 @@
 //! - `retrieval`: 记忆检索和搜索
 //! - `prompt`: 系统提示词构建
 
-pub mod types;
 pub mod frontmatter;
-pub mod storage;
-pub mod retrieval;
 pub mod prompt;
+pub mod retrieval;
+pub mod storage;
+pub mod types;
 
 // 重新导出主要类型，方便用户使用
-pub use types::{
-    Memory,
-    MemoryConfig,
-    MemoryFrontmatter,
-    MemoryHeader,
-    MemoryType,
-};
-pub use storage::MemoryStorage;
-pub use retrieval::{MemoryRetriever, RetrievedMemory};
-pub use prompt::build_memory_prompt;
 pub use frontmatter::{format_frontmatter, parse_frontmatter};
+pub use prompt::build_memory_prompt;
+pub use retrieval::{MemoryRetriever, RetrievedMemory};
+pub use storage::MemoryStorage;
+pub use types::{Memory, MemoryConfig, MemoryFrontmatter, MemoryHeader, MemoryType};
 
 /// 错误类型
 ///

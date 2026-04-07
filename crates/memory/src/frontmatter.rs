@@ -141,7 +141,11 @@ fn parse_yaml_like(text: &str) -> HashMap<String, String> {
         if let Some((key, value)) = line.split_once(':') {
             let key = key.trim().to_string();
             // 去掉值两边的空白和引号
-            let value = value.trim().trim_matches('"').trim_matches('\'').to_string();
+            let value = value
+                .trim()
+                .trim_matches('"')
+                .trim_matches('\'')
+                .to_string();
             if !key.is_empty() {
                 result.insert(key, value);
             }
@@ -177,7 +181,11 @@ fn parse_toml_like(text: &str) -> HashMap<String, String> {
         // TOML 使用等号分割
         if let Some((key, value)) = line.split_once('=') {
             let key = key.trim().to_string();
-            let value = value.trim().trim_matches('"').trim_matches('\'').to_string();
+            let value = value
+                .trim()
+                .trim_matches('"')
+                .trim_matches('\'')
+                .to_string();
             if !key.is_empty() {
                 result.insert(key, value);
             }
@@ -223,11 +231,7 @@ fn parse_toml_like(text: &str) -> HashMap<String, String> {
 /// // ---
 /// //
 /// ```
-pub fn format_frontmatter(
-    name: &str,
-    description: &str,
-    memory_type: &str,
-) -> String {
+pub fn format_frontmatter(name: &str, description: &str, memory_type: &str) -> String {
     format!(
         r#"---
 name: {}

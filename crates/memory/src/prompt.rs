@@ -76,9 +76,7 @@ use crate::types::MemoryType;
 /// # Ok(())
 /// # }
 /// ```
-pub async fn build_memory_prompt(
-    storage: &MemoryStorage,
-) -> std::io::Result<String> {
+pub async fn build_memory_prompt(storage: &MemoryStorage) -> std::io::Result<String> {
     let memory_dir = storage.memory_dir();
     let entrypoint = storage.read_entrypoint().await?;
 
@@ -119,7 +117,10 @@ pub async fn build_memory_prompt(
     } else {
         lines.push("## MEMORY.md".to_string());
         lines.push("".to_string());
-        lines.push("Your MEMORY.md is currently empty. When you save new memories, they will appear here.".to_string());
+        lines.push(
+            "Your MEMORY.md is currently empty. When you save new memories, they will appear here."
+                .to_string(),
+        );
     }
 
     Ok(lines.join("\n"))
@@ -141,7 +142,8 @@ fn build_types_section() -> Vec<String> {
     vec![
         "## Types of memory".to_string(),
         "".to_string(),
-        "There are several discrete types of memory that you can store in your memory system:".to_string(),
+        "There are several discrete types of memory that you can store in your memory system:"
+            .to_string(),
         "".to_string(),
         format!("### user\n\n{}", MemoryType::User.when_to_save()),
         "".to_string(),

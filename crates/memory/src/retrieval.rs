@@ -249,9 +249,7 @@ impl MemoryRetriever {
     ///
     /// 在系统提示词中列出所有可用的记忆，
     /// 让 AI 知道有哪些记忆可以参考。
-    pub async fn get_all_memories_summary(
-        storage: &MemoryStorage,
-    ) -> std::io::Result<String> {
+    pub async fn get_all_memories_summary(storage: &MemoryStorage) -> std::io::Result<String> {
         let headers = storage.scan_memories().await?;
 
         // 没有记忆时返回提示
@@ -276,12 +274,7 @@ impl MemoryRetriever {
                 .map(|d| format!(" — {}", d))
                 .unwrap_or_default();
 
-            output.push_str(&format!(
-                "- {}{}{}\n",
-                type_tag,
-                header.filename,
-                desc
-            ));
+            output.push_str(&format!("- {}{}{}\n", type_tag, header.filename, desc));
         }
 
         Ok(output)
@@ -320,25 +313,32 @@ mod tests {
         let storage = MemoryStorage::new(config, "test-project");
 
         // 保存测试记忆
-        storage.save_memory(
-            "rust_expertise.md",
-            "Rust Expertise",
-            "User has 10 years Rust experience",
-            MemoryType::User,
-            "Detailed content about Rust",
-        ).await.unwrap();
+        storage
+            .save_memory(
+                "rust_expertise.md",
+                "Rust Expertise",
+                "User has 10 years Rust experience",
+                MemoryType::User,
+                "Detailed content about Rust",
+            )
+            .await
+            .unwrap();
 
-        storage.save_memory(
-            "frontend_feedback.md",
-            "Frontend Feedback",
-            "Prefers React over Vue",
-            MemoryType::Feedback,
-            "Detailed feedback content",
-        ).await.unwrap();
+        storage
+            .save_memory(
+                "frontend_feedback.md",
+                "Frontend Feedback",
+                "Prefers React over Vue",
+                MemoryType::Feedback,
+                "Detailed feedback content",
+            )
+            .await
+            .unwrap();
 
         // 搜索与 Rust 相关的记忆
-        let results = MemoryRetriever::find_relevant(&storage, "rust experience", 5
-        ).await.unwrap();
+        let results = MemoryRetriever::find_relevant(&storage, "rust experience", 5)
+            .await
+            .unwrap();
 
         assert!(!results.is_empty());
         assert!(results[0].header.filename.contains("rust"));
@@ -385,24 +385,32 @@ mod tests {
         let storage = MemoryStorage::new(config, "test-project");
 
         // 保存记忆
-        storage.save_memory(
-            "python_guide.md",
-            "Python Guide",
-            "User prefers Python for scripting",
-            MemoryType::User,
-            "Content",
-        ).await.unwrap();
+        storage
+            .save_memory(
+                "python_guide.md",
+                "Python Guide",
+                "User prefers Python for scripting",
+                MemoryType::User,
+                "Content",
+            )
+            .await
+            .unwrap();
 
-        storage.save_memory(
-            "rust_guide.md",
-            "Rust Guide",
-            "User prefers Rust for systems",
-            MemoryType::User,
-            "Content",
-        ).await.unwrap();
+        storage
+            .save_memory(
+                "rust_guide.md",
+                "Rust Guide",
+                "User prefers Rust for systems",
+                MemoryType::User,
+                "Content",
+            )
+            .await
+            .unwrap();
 
         // 搜索 "python" - 应该找到 python_guide
-        let results = MemoryRetriever::find_relevant(&storage, "python", 5).await.unwrap();
+        let results = MemoryRetriever::find_relevant(&storage, "python", 5)
+            .await
+            .unwrap();
         assert!(!results.is_empty());
         assert!(results[0].header.filename.contains("python"));
     }
@@ -421,16 +429,21 @@ mod tests {
         };
         let storage = MemoryStorage::new(config, "test-project");
 
-        storage.save_memory(
-            "feedback_1.md",
-            "Feedback",
-            "Some feedback",
-            MemoryType::Feedback,
-            "Content",
-        ).await.unwrap();
+        storage
+            .save_memory(
+                "feedback_1.md",
+                "Feedback",
+                "Some feedback",
+                MemoryType::Feedback,
+                "Content",
+            )
+            .await
+            .unwrap();
 
         // 按类型名搜索
-        let results = MemoryRetriever::find_relevant(&storage, "feedback", 5).await.unwrap();
+        let results = MemoryRetriever::find_relevant(&storage, "feedback", 5)
+            .await
+            .unwrap();
         assert!(!results.is_empty());
         assert_eq!(results[0].header.memory_type, Some(MemoryType::Feedback));
     }
@@ -449,16 +462,21 @@ mod tests {
         };
         let storage = MemoryStorage::new(config, "test-project");
 
-        storage.save_memory(
-            "rust.md",
-            "Rust",
-            "Rust content",
-            MemoryType::User,
-            "Content",
-        ).await.unwrap();
+        storage
+            .save_memory(
+                "rust.md",
+                "Rust",
+                "Rust content",
+                MemoryType::User,
+                "Content",
+            )
+            .await
+            .unwrap();
 
         // 搜索不相关的词
-        let results = MemoryRetriever::find_relevant(&storage, "python javascript java", 5).await.unwrap();
+        let results = MemoryRetriever::find_relevant(&storage, "python javascript java", 5)
+            .await
+            .unwrap();
         assert!(results.is_empty());
     }
 
@@ -478,16 +496,21 @@ mod tests {
 
         // 保存 5 个记忆
         for i in 0..5 {
-            storage.save_memory(
-                &format!("memory_{}.md", i),
-                &format!("Memory {}", i),
-                "Test description with rust keyword",
-                MemoryType::User,
-                "Content",
-            ).await.unwrap();
+            storage
+                .save_memory(
+                    &format!("memory_{}.md", i),
+                    &format!("Memory {}", i),
+                    "Test description with rust keyword",
+                    MemoryType::User,
+                    "Content",
+                )
+                .await
+                .unwrap();
         }
 
-        let results = MemoryRetriever::find_relevant(&storage, "rust", 3).await.unwrap();
+        let results = MemoryRetriever::find_relevant(&storage, "rust", 3)
+            .await
+            .unwrap();
         assert_eq!(results.len(), 3);
     }
 
@@ -507,23 +530,31 @@ mod tests {
         };
         let storage = MemoryStorage::new(config, "test-project");
 
-        storage.save_memory(
-            "user_pref.md",
-            "User Preferences",
-            "User likes dark mode",
-            MemoryType::User,
-            "Content",
-        ).await.unwrap();
+        storage
+            .save_memory(
+                "user_pref.md",
+                "User Preferences",
+                "User likes dark mode",
+                MemoryType::User,
+                "Content",
+            )
+            .await
+            .unwrap();
 
-        storage.save_memory(
-            "api_ref.md",
-            "API Reference",
-            "Internal API docs",
-            MemoryType::Reference,
-            "Content",
-        ).await.unwrap();
+        storage
+            .save_memory(
+                "api_ref.md",
+                "API Reference",
+                "Internal API docs",
+                MemoryType::Reference,
+                "Content",
+            )
+            .await
+            .unwrap();
 
-        let summary = MemoryRetriever::get_all_memories_summary(&storage).await.unwrap();
+        let summary = MemoryRetriever::get_all_memories_summary(&storage)
+            .await
+            .unwrap();
         assert!(summary.contains("user_pref.md"));
         assert!(summary.contains("api_ref.md"));
         assert!(summary.contains("[user]"));
@@ -546,7 +577,9 @@ mod tests {
         };
         let storage = MemoryStorage::new(config, "test-project");
 
-        let summary = MemoryRetriever::get_all_memories_summary(&storage).await.unwrap();
+        let summary = MemoryRetriever::get_all_memories_summary(&storage)
+            .await
+            .unwrap();
         assert_eq!(summary, "No memories stored yet.");
     }
 

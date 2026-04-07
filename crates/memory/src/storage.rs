@@ -217,10 +217,7 @@ impl MemoryStorage {
     ///
     /// - `full_content`: 包含 frontmatter，用于显示完整文件
     /// - `body`: 去掉 frontmatter 的正文，用于 AI 理解内容
-    pub async fn read_memory(
-        &self,
-        filename: &str,
-    ) -> std::io::Result<Option<(String, String)>> {
+    pub async fn read_memory(&self, filename: &str) -> std::io::Result<Option<(String, String)>> {
         let file_path = self.memory_dir().join(filename);
 
         // 文件不存在返回 None（不是错误）
@@ -284,7 +281,8 @@ impl MemoryStorage {
                 path.extension().is_some_and(|ext| ext == "md")
                     && path.file_name().is_some_and(|name| name != "MEMORY.md")
             })
-            .take(max_files) // 限制文件数量
+            .take(max_files)
+        // 限制文件数量
         {
             let path = entry.path();
             let metadata = entry.metadata()?;
@@ -401,9 +399,10 @@ impl MemoryStorage {
         description: &str,
     ) -> std::io::Result<()> {
         // 读取现有内容，如果不存在则创建默认标题
-        let mut content = self.read_entrypoint().await?.unwrap_or_else(|| {
-            "# Memory Index\n\n".to_string()
-        });
+        let mut content = self
+            .read_entrypoint()
+            .await?
+            .unwrap_or_else(|| "# Memory Index\n\n".to_string());
 
         // 添加新条目
         let entry = format!("- [{}]({}) -- {}\n", name, filename, description);
@@ -589,10 +588,7 @@ mod tests {
     async fn test_entrypoint() {
         let (storage, _temp) = create_test_storage().await;
 
-        storage
-            .write_entrypoint("# Test Index\n")
-            .await
-            .unwrap();
+        storage.write_entrypoint("# Test Index\n").await.unwrap();
 
         let content = storage.read_entrypoint().await.unwrap();
         assert!(content.is_some());
@@ -829,7 +825,10 @@ mod tests {
         let header = &headers[0];
         assert_eq!(header.filename, "with_frontmatter.md");
         assert_eq!(header.description, Some("A test description".to_string()));
-        assert_eq!(header.memory_type, Some(crate::types::MemoryType::Reference));
+        assert_eq!(
+            header.memory_type,
+            Some(crate::types::MemoryType::Reference)
+        );
     }
 
     /// 测试并发保存
