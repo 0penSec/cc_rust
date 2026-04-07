@@ -1,0 +1,35 @@
+[package]
+name = "claude-memory"
+version = "0.1.1"
+edition = "2021"
+authors = ["Claude Code RS Team"]
+license = "MIT"
+description = "Persistent memory system for Claude Code"
+
+[dependencies]
+claude-core = { path = "../core" }
+
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_yaml = "0.9"
+tokio = { workspace = true }
+tracing = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+
+# File operations
+walkdir = "2.5"
+globset = "0.4"
+ignore = "0.4"
+
+# Frontmatter parsing
+regex = "1.11"
+
+# Path handling
+directories = "5.0"
+
+[dev-dependencies]
+tokio-test = "0.4"
+tempfile = "3.14"

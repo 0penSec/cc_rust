@@ -10,6 +10,7 @@ members = [
     "crates/services",
     "crates/bridge",
     "crates/coordinator",
+    "crates/memory",
     "crates/cli",
 ]
 
@@ -138,6 +139,7 @@ claude-tui = { path = "crates/tui", version = "0.1.0" }
 claude-services = { path = "crates/services", version = "0.1.0" }
 claude-bridge = { path = "crates/bridge", version = "0.1.0" }
 claude-coordinator = { path = "crates/coordinator", version = "0.1.0" }
+claude-memory = { path = "crates/memory", version = "0.1.0" }
 
 [profile.release]
 opt-level = 3
