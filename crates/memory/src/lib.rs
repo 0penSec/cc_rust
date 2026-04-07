@@ -77,11 +77,11 @@
 //!
 //! ## 模块说明
 //!
-//! - [`types`]: 核心数据类型（MemoryType, MemoryHeader 等）
-//! - [`frontmatter`]: Frontmatter 解析和生成
-//! - [`storage`]: 文件存储操作
-//! - [`retrieval`]: 记忆检索和搜索
-//! - [`prompt`]: 系统提示词构建
+//! - `types`: 核心数据类型（MemoryType, MemoryHeader 等）
+//! - `frontmatter`: Frontmatter 解析和生成
+//! - `storage`: 文件存储操作
+//! - `retrieval`: 记忆检索和搜索
+//! - `prompt`: 系统提示词构建
 
 pub mod types;
 pub mod frontmatter;
