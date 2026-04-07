@@ -1,0 +1,5 @@
+# Clippy 配置
+avoid-breaking-exported-api = false
+disallowed-names = ["foo", "bar", "baz"]
+too-many-arguments-threshold = 8
+too-many-lines-threshold = 100
